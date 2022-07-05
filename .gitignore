@@ -34,3 +34,6 @@ build/
 .mvn/**
 mvnw**
 spring-shell.log
+
+## Spring Shell ##
+application.yml

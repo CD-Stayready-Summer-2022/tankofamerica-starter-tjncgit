@@ -1,5 +1,7 @@
 package com.codedifferently.tankofamerica.domain.user.controllers;
 
+import com.codedifferently.tankofamerica.domain.user.Exceptions.InvalidCredentialsException;
+import com.codedifferently.tankofamerica.domain.user.Exceptions.UserNotFoundException;
 import com.codedifferently.tankofamerica.domain.user.models.User;
 import com.codedifferently.tankofamerica.domain.user.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +26,22 @@ public class UserController {
         User user = new User(firstName,lastName,email,password);
         user = userService.create(user);
         return user;
-
     }
 
     @ShellMethod("Get All Users")
     public String getAllUsers(){
         return userService.getAllUsers();
     }
+
+    @ShellMethod("Log In")
+    public String logIn(@ShellOption({"-E", "-email"}) String userName, @ShellOption({"-P", "-pwd"}) String password){
+        try{
+            return userService.signIn(userName, password);
+        } catch (UserNotFoundException e){
+            return e.getMessage();
+        } catch (InvalidCredentialsException e) {
+            return e.getMessage();
+        }
+    }
+
 }
