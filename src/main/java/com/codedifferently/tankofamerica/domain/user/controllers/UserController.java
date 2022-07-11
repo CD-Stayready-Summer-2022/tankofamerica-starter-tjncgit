@@ -11,11 +11,15 @@ import org.springframework.shell.standard.ShellOption;
 
 @ShellComponent
 public class UserController {
-    private UserService userService;
+    public UserService userService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public static User currentUser;
+
+    @Autowired
+    public UserController(UserService userService, User currentUser) {
         this.userService = userService;
+        this.currentUser = null;
     }
 
     @ShellMethod("Create a new User")
@@ -36,12 +40,29 @@ public class UserController {
     @ShellMethod("Log In")
     public String logIn(@ShellOption({"-E", "-email"}) String userName, @ShellOption({"-P", "-pwd"}) String password){
         try{
-            return userService.signIn(userName, password);
+            currentUser = userService.signIn(userName, password);
+            return currentUser.getEmail() + " is signed In";
         } catch (UserNotFoundException e){
             return e.getMessage();
         } catch (InvalidCredentialsException e) {
             return e.getMessage();
         }
     }
+
+    @ShellMethod("Change E-Mail")
+    public User changeEmail(@ShellOption({"-E", "--email"}) String newEmail) {
+        return userService.changeEmail(currentUser, newEmail);
+    }
+    @ShellMethod("Change password")
+    public User changePassword(@ShellOption({"-P", "--password"}) String newPassword) {
+        return userService.changePassword(currentUser, newPassword);
+    }
+
+    @ShellMethod("Log Out")
+    public String logOut() {
+        currentUser = null;
+        return "User is Logged Out";
+    }
+
 
 }

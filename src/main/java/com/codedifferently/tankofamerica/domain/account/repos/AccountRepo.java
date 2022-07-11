@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface AccountRepo extends CrudRepository<Account, Long> {
     List<Account> findByOwner(User owner);
     Account findById(UUID id);
+    Optional<Account> findByAccountName(String accountName);
 }

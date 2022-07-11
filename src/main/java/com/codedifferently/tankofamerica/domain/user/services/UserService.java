@@ -12,6 +12,7 @@ public interface UserService {
     User getById(Long id) throws UserNotFoundException;
     User getByEmail(String email) throws UserNotFoundException;
     Boolean validatePassword(User user, String password) throws InvalidCredentialsException;
-
-    String signIn(String email, String password) throws UserNotFoundException, InvalidCredentialsException;
+    User signIn(String email, String password) throws UserNotFoundException, InvalidCredentialsException;
+    User changeEmail(User user, String newEmail);
+    User changePassword(User user, String newPassword);
 }

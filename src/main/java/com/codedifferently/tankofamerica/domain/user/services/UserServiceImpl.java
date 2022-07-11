@@ -2,6 +2,7 @@ package com.codedifferently.tankofamerica.domain.user.services;
 
 import com.codedifferently.tankofamerica.domain.account.models.Account;
 import com.codedifferently.tankofamerica.domain.account.services.AccountService;
+import com.codedifferently.tankofamerica.domain.transaction.services.TransactionService;
 import com.codedifferently.tankofamerica.domain.user.Exceptions.InvalidCredentialsException;
 import com.codedifferently.tankofamerica.domain.user.Exceptions.UserNotFoundException;
 import com.codedifferently.tankofamerica.domain.user.models.User;
@@ -19,7 +20,6 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     private static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private UserRepo userRepo;
-
     @Autowired
     public UserServiceImpl(UserRepo userRepo) {
         this.userRepo = userRepo;
@@ -40,7 +40,6 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-
     public String getAllUsers(){
         StringBuilder builder = new StringBuilder();
         Iterable<User> users = userRepo.findAll();
@@ -60,7 +59,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getByEmail(String email) throws UserNotFoundException {
-        Optional<User> optional = Optional.ofNullable(userRepo.findByEmail(email));
+        Optional<User> optional = userRepo.findByEmail(email);
         if(optional.isEmpty())
             throw new UserNotFoundException("user " + email + "not found");
         return optional.get();
@@ -74,10 +73,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String signIn(String email, String password) throws UserNotFoundException, InvalidCredentialsException {
+    public  User signIn(String email, String password) throws UserNotFoundException, InvalidCredentialsException {
         User user = getByEmail(email);
         validatePassword(user, password);
-        return user.toString();
+        return user;
+    }
+
+    @Override
+    public User changeEmail(User user, String newEmail) {
+        user.setEmail(newEmail);
+        update(user);
+        return update(user);
+    }
+
+    @Override
+    public User changePassword(User user, String newPassword) {
+        user.setPassword(newPassword);
+        return update(user);
     }
 
 

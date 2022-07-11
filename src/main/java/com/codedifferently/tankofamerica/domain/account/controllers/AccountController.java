@@ -13,6 +13,8 @@ import org.springframework.shell.standard.ShellOption;
 
 import java.util.UUID;
 
+import static com.codedifferently.tankofamerica.domain.user.controllers.UserController.currentUser;
+
 @ShellComponent
 public class AccountController {
    private AccountService accountService;
@@ -23,11 +25,10 @@ public class AccountController {
    }
 
    @ShellMethod("Create a new Account")
-   public String createNewAccount(@ShellOption({"-U", "--user"}) Long id,
-                                   @ShellOption({"-N", "--name"}) String accountName){
+   public String createNewAccount(@ShellOption({"-N", "--name"}) String accountName){
        try {
            Account account = new Account(accountName);
-           account = accountService.create(id, account);
+           account = accountService.create(currentUser.getId(), account);
            return account.toString();
        } catch (UserNotFoundException e) {
            return "The User Id is invalid";
@@ -44,20 +45,19 @@ public class AccountController {
        }
    }
 
-   @ShellMethod("Get all accounts")
-   public String getAllAccounts(@ShellOption({"-U", "--user"}) Long id) {
+   @ShellMethod("Get all accounts from Current User")
+   public String getAllAccounts() {
        try {
-           String accounts = accountService.getAllFromUser(id);
-           return accounts;
+            return accountService.getAllFromUser(currentUser.getId());
        } catch (UserNotFoundException e) {
-           return "the user id is invalid";
+           return e.getMessage();
        }
    }
 
    @ShellMethod("Get all accounts")
-   public String getAccount(@ShellOption({"-I", "--id"}) UUID id) {
+   public String getAccount(@ShellOption({"-N", "--name"}) String name) {
        try {
-           Account account = accountService.getById(id);
+           Account account = accountService.getByAccountName(name);
            return account.toString();
        } catch (AccountNotFoundException e) {
            return "account does not exist";
@@ -65,38 +65,45 @@ public class AccountController {
    }
 
    @ShellMethod("Add money to account")
-   public Boolean deposit(@ShellOption({"-I", "--id"}) UUID id, @ShellOption({"-A", "--amount"}) Long amount) {
+   public String deposit(@ShellOption({"-N", "--name"}) String name, @ShellOption({"-A", "--amount"}) Long amount) {
        try {
-           return accountService.deposit(id, amount);
+           accountService.deposit(name, amount);
+           return String.format("deposit of %d into %s account complete", amount, name);
        } catch (AccountNotFoundException e) {
-           System.out.println(e.getMessage());
-           return false;
+           return e.getMessage();
        }
    }
 
    @ShellMethod("Withdraw money from account")
-   public Boolean withdraw(@ShellOption({"-I", "--id"}) UUID id, @ShellOption({"-A", "--amount"}) Long amount) {
+   public String withdraw(@ShellOption({"-N", "--name"}) String name, @ShellOption({"-A", "--amount"}) Long amount) {
        try {
-           return accountService.withdraw(id, amount);
+           accountService.withdraw(name, amount);
+           return String.format("withdraw of %d from %s account complete", amount, name);
        } catch (AccountNotFoundException e) {
-           System.out.println(e.getMessage());
-           return false;
+           return e.getMessage();
        } catch (InsufficientFundsException e) {
-           System.out.println(e.getMessage());
-           return false;
+            return e.getMessage();
        }
    }
 
    @ShellMethod("transfer money to another account")
-   public Boolean transfer(@ShellOption({"-F", "--from"}) UUID fromId, @ShellOption({"-F", "--from"}) UUID toId, @ShellOption({"-A", "--amount"}) Long amount) {
+   public String transfer(@ShellOption({"-F", "--from"}) String fromName, @ShellOption({"-T", "--to"}) String toName, @ShellOption({"-A", "--amount"}) Long amount) {
        try {
-           return accountService.transfer(fromId,toId, amount);
+           accountService.transfer(fromName,toName, amount);
+           return String.format("transfer of %d from %s account to %s account complete", amount, fromName, toName);
        } catch (AccountNotFoundException e) {
-           System.out.println(e.getMessage());
-           return false;
+           return e.getMessage();
        } catch (InsufficientFundsException e) {
-           System.out.println(e.getMessage());
-           return false;
+           return e.getMessage();
+       }
+   }
+
+   @ShellMethod("check account balance")
+    public String checkAccountBalance(@ShellOption({"-N", "--name"}) String accountName) {
+       try {
+           return String.format("%s balance: $%s", accountName, accountService.checkBalance(accountName));
+       } catch (AccountNotFoundException e) {
+           return e.getMessage();
        }
    }
 }

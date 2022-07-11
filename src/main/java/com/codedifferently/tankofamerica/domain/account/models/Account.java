@@ -17,7 +17,6 @@ public class Account {
     @Type(type = "uuid-char")
     private UUID id;
     private String accountName;
-
     @ManyToOne()
     private User owner;
     Long balance;

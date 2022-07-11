@@ -1,10 +1,12 @@
 package com.codedifferently.tankofamerica.domain.user.models;
 
 import com.codedifferently.tankofamerica.domain.account.models.Account;
+import com.codedifferently.tankofamerica.domain.transaction.models.Transaction;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.*;
 import java.util.Set;
-
+@Service
 @Entity
 @Table(name="users")
 public class User {
@@ -15,9 +17,10 @@ public class User {
     private String lastName;
     private String email;
     private String password;
-
     @OneToMany(targetEntity = Account.class, cascade = CascadeType.ALL, mappedBy = "owner")
     private Set<Account> accounts;
+    @OneToMany(targetEntity = Transaction.class, cascade = CascadeType.ALL, mappedBy = "owner")
+    private Set<Transaction> transactions;
 
     public User() {
     }
